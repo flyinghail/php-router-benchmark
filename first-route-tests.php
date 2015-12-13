@@ -36,6 +36,11 @@ function setupBenchmark($numIterations, $numRoutes, $numArgs)
     setupSymfony2($benchmark, $numRoutes, $numArgs);
     setupSymfony2Optimized($benchmark, $numRoutes, $numArgs);
     setupPux($benchmark, $numRoutes, $numArgs);
+    setupRouter($benchmark, $numRoutes, $numArgs);
+    setupTreeRoute($benchmark, $numRoutes, $numArgs);
+    setupTimber($benchmark, $numRoutes, $numArgs);
+    setupConformity($benchmark, $numRoutes, $numArgs);
+    setupLearnableConformity($benchmark, $numRoutes, $numArgs);
 
     return $benchmark;
 }
@@ -223,4 +228,125 @@ function setupAura2(Benchmark $benchmark, $routes, $args)
     $benchmark->register('Aura v2 - first route', function () use ($router, $firstStr) {
             $route = $router->match($firstStr);
         });
+}
+
+/**
+ * Sets up Router tests
+ */
+function setupRouter(Benchmark $benchmark, $routes, $args)
+{
+    $name = 'Router';
+    $argString = implode('/', array_map(function ($i) { return ':arg' . $i; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Router;
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+
+        if (0 === $i) {
+            $firstStr = str_replace(':', '', $str);
+        }
+        $lastStr = str_replace(':', '', $str);
+
+        $router->get($str, 'handler' . $i);
+    }
+
+    $benchmark->register(sprintf('%s - unkown route', $name), function () use ($router, $firstStr) {
+            $route = $router->resolve('GET', '/not-real-router', array());
+        });
+    $benchmark->register(sprintf('%s - first route', $name), function () use ($router, $firstStr) {
+            $route = $router->resolve('GET', $firstStr, array());
+        });
+}
+
+/**
+ * Sets up TreeRoute tests
+ */
+function setupTreeRoute(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \TreeRoute\Router();
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->addRoute(['GET'], $str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('TreeRoute - first route', $routes), function () use ($router, $firstStr) {
+            $route = $router->dispatch('GET', $firstStr);
+        });
+}
+
+/**
+ * Sets up Timber tests
+ */
+function setupTimber(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "<arg$i>"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \mindplay\timber\Router();
+
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+
+        $router->route($str)->get('handler' . $i);
+    }
+
+    $benchmark->register(sprintf('Timber - first route', $routes), function () use ($router, $firstStr) {
+            $route = $router->resolve('GET', $firstStr);
+        });
+}
+
+
+/**
+ * Sets up Conformity tests
+ */
+function setupConformity(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Conformity\Router\Router();
+    for ($i = 0, $str = 'a'; $i < $routes; $i++, $str++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->get($str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('Conformity - first route (%s routes)', $routes), function () use ($router, $firstStr) {
+        $route = $router->dispatch('GET', $firstStr);
+    });
+}
+/**
+ * Sets up LearnableConformity tests
+ */
+function setupLearnableConformity(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Conformity\Router\LearnableCachedRouter(new \Conformity\Router\LearnableFileCache(__DIR__ . '/files/first-route-conformity.php'));
+    for ($i = 0, $str = 'a'; $i < $routes; $i++, $str++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->get($str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('Conformity Learnable - first route (%s routes)', $routes), function () use ($router, $firstStr) {
+        $route = $router->dispatch('GET', $firstStr);
+    });
 }
