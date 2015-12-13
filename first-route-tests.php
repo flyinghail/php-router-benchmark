@@ -251,9 +251,6 @@ function setupRouter(Benchmark $benchmark, $routes, $args)
         $router->get($str, 'handler' . $i);
     }
 
-    $benchmark->register(sprintf('%s - unkown route', $name), function () use ($router, $firstStr) {
-            $route = $router->resolve('GET', '/not-real-router', array());
-        });
     $benchmark->register(sprintf('%s - first route', $name), function () use ($router, $firstStr) {
             $route = $router->resolve('GET', $firstStr, array());
         });
