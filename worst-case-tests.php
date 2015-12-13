@@ -37,6 +37,11 @@ function setupBenchmark($numIterations, $numRoutes, $numArgs)
     setupSymfony2($benchmark, $numRoutes, $numArgs);
     setupSymfony2Optimized($benchmark, $numRoutes, $numArgs);
     setupPux($benchmark, $numRoutes, $numArgs);
+    setupRouter($benchmark, $numRoutes, $numArgs);
+    setupTreeRoute($benchmark, $numRoutes, $numArgs);
+    setupTimber($benchmark, $numRoutes, $numArgs);
+    setupConformity($benchmark, $numRoutes, $numArgs);
+    setupLearnableConformity($benchmark, $numRoutes, $numArgs);
 
     return $benchmark;
 }
@@ -248,4 +253,142 @@ function setupAura2(Benchmark $benchmark, $routes, $args)
     $benchmark->register(sprintf('Aura v2 - unknown route (%s routes)', $routes), function () use ($router) {
             $route = $router->match('/not-even-real', $_SERVER);
         });
+}
+
+/**
+ * Sets up Router tests
+ */
+function setupRouter(Benchmark $benchmark, $routes, $args)
+{
+    $name = 'Router';
+
+    $argString = implode('/', array_map(function ($i) { return ':arg' . $i; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Router;
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+
+        if (0 === $i) {
+            $firstStr = str_replace(':', '', $str);
+        }
+        $lastStr = str_replace(':', '', $str);
+
+        $router->get($str, 'handler' . $i);
+    }
+
+    $benchmark->register(sprintf('%s - last route (%s routes)', $name, $routes), function () use ($router, $lastStr) {
+            $route = $router->resolve('GET', $lastStr, array());
+        });
+
+    $benchmark->register(sprintf('%s - unknown route (%s routes)', $name, $routes), function () use ($router) {
+            $route = $router->resolve('GET', '/not-even-real', array());
+        });
+}
+
+/**
+ * Sets up TreeRoute tests
+ */
+function setupTreeRoute(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \TreeRoute\Router();
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->addRoute('GET', $str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('TreeRoute - last route (%s routes)', $routes), function () use ($router, $lastStr) {
+            $route = $router->dispatch('GET', $lastStr);
+        });
+    $benchmark->register(sprintf('TreeRoute - unknown route (%s routes)', $routes), function () use ($router) {
+            $route = $router->dispatch('GET', '/not-even-real');
+        });
+}
+
+/**
+ * Sets up Timber tests
+ */
+function setupTimber(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "<arg$i>"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \mindplay\timber\Router();
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+
+        $router->route($str)->get('handler' . $i);
+    }
+
+    $benchmark->register(sprintf('Timber - last route (%s routes)', $routes), function () use ($router, $lastStr) {
+            $route = $router->resolve('GET', $lastStr);
+        });
+
+    $benchmark->register(sprintf('Timber - unknown route (%s routes)', $routes), function () use ($router) {
+            $route = $router->resolve('GET', '/not-even-real');
+        });
+}
+
+/**
+ * Sets up Conformity tests
+ */
+function setupConformity(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Conformity\Router\Router();
+    for ($i = 0, $str = 'a'; $i < $routes; $i++, $str++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->get($str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('Conformity - last route (%s routes)', $routes), function () use ($router, $lastStr) {
+        $route = $router->dispatch('GET', $lastStr);
+    });
+    $benchmark->register(sprintf('Conformity - unknown route (%s routes)', $routes), function () use ($router) {
+        try {
+            $route = $router->dispatch('/not-even-real');
+        } catch (\Exception $e) { }
+    });
+}
+/**
+ * Sets up LearnableConformity tests
+ */
+function setupLearnableConformity(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Conformity\Router\LearnableCachedRouter(new \Conformity\Router\LearnableFileCache(__DIR__ . '/files/worst-case-conformity.php'));
+    for ($i = 0, $str = 'a'; $i < $routes; $i++, $str++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->get($str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('Conformity Learnable - last route (%s routes)', $routes), function () use ($router, $lastStr) {
+        $route = $router->dispatch('GET', $lastStr);
+    });
+    $benchmark->register(sprintf('Conformity Learnable - unknown route (%s routes)', $routes), function () use ($router) {
+        try {
+            $route = $router->dispatch('/not-even-real');
+        } catch (\Exception $e) { }
+    });
 }
