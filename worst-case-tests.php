@@ -324,9 +324,9 @@ function setupTimber(Benchmark $benchmark, $routes, $args)
         $str = '/' . $pre . '/' . $argString . '/' . $post;
 
         if (0 === $i) {
-            $firstStr = str_replace(array('{', '}'), '', $str);
+            $firstStr = str_replace(array('<', '>'), '', $str);
         }
-        $lastStr = str_replace(array('{', '}'), '', $str);
+        $lastStr = str_replace(array('<', '>'), '', $str);
 
         $router->route($str)->get('handler' . $i);
     }
