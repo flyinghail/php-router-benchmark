@@ -4,6 +4,7 @@ PHP Router Benchmark
 The intent here is to benchmark different PHP routing solutions. This is a micro-optimization, done purely out of 
 dumb curiosity.
 
+My benchmark env: Debian 8 + PHP 7.0.0
 
 Installation
 ------------
@@ -15,6 +16,11 @@ installed, the tests will fallback to the pure PHP implementation of Pux.
 
 To test the [R3 library](https://github.com/c9s/php-r3), you also need to install that extension. If the extension is
 not installed, the tests for R3 will be skipped.
+
+Benchmark environment
+---------
+Debian 8.2
+PHP 7.0.0
 
 Currently
 ---------
@@ -33,18 +39,26 @@ This benchmark consists of 12 tests. Each test is executed 1,000 times, the resu
 
 Test Name | Results | Time | + Interval | Change
 --------- | ------- | ---- | ---------- | ------
-r3 - unknown route (1000 routes) | 987 | 0.0000111161 | +0.0000000000 | baseline
-r3 - last route (1000 routes) | 994 | 0.0000135476 | +0.0000024316 | 22% slower
-FastRoute - unknown route (1000 routes) | 982 | 0.0003966292 | +0.0003855132 | 3468% slower
-FastRoute - last route (1000 routes) | 999 | 0.0004029198 | +0.0003918037 | 3525% slower
-Pux ext - unknown route (1000 routes) | 984 | 0.0008801297 | +0.0008690136 | 7818% slower
-Symfony2 Dumped - unknown route (1000 routes) | 981 | 0.0009883075 | +0.0009771914 | 8791% slower
-Pux ext - last route (1000 routes) | 999 | 0.0009942575 | +0.0009831414 | 8844% slower
-Symfony2 Dumped - last route (1000 routes) | 978 | 0.0010521817 | +0.0010410656 | 9365% slower
-Symfony2 - unknown route (1000 routes) | 989 | 0.0061380323 | +0.0061269163 | 55118% slower
-Symfony2 - last route (1000 routes) | 999 | 0.0061715401 | +0.0061604240 | 55419% slower
-Aura v2 - last route (1000 routes) | 982 | 0.1814854888 | +0.1814743727 | 1632542% slower
-Aura v2 - unknown route (1000 routes) | 977 | 0.1871979547 | +0.1871868386 | 1683932% slower
+Conformity Learnable - last route (1000 routes) | 999 | 0.0000040944 | +0.0000000000 | baseline
+Timber - unknown route (1000 routes) | 997 | 0.0000046034 | +0.0000005090 | 12% slower
+Router - unknown route (1000 routes) | 991 | 0.0000047785 | +0.0000006841 | 17% slower
+TreeRoute - unknown route (1000 routes) | 990 | 0.0000057411 | +0.0000016467 | 40% slower
+TreeRoute - last route (1000 routes) | 996 | 0.0000111083 | +0.0000070139 | 171% slower
+Conformity - unknown route (1000 routes) | 997 | 0.0000137001 | +0.0000096057 | 235% slower
+Conformity Learnable - unknown route (1000 routes) | 985 | 0.0000150557 | +0.0000109613 | 268% slower
+Router - last route (1000 routes) | 989 | 0.0000195040 | +0.0000154096 | 376% slower
+Timber - last route (1000 routes) | 999 | 0.0000274349 | +0.0000233405 | 570% slower
+FastRoute - unknown route (1000 routes) | 980 | 0.0000672345 | +0.0000631401 | 1542% slower
+Symfony2 Dumped - unknown route (1000 routes) | 989 | 0.0000924575 | +0.0000883631 | 2158% slower
+FastRoute - last route (1000 routes) | 999 | 0.0001264955 | +0.0001224011 | 2989% slower
+Symfony2 Dumped - last route (1000 routes) | 995 | 0.0001772135 | +0.0001731192 | 4228% slower
+Symfony2 - unknown route (1000 routes) | 998 | 0.0006014890 | +0.0005973946 | 14591% slower
+Pux PHP - unknown route (1000 routes) | 998 | 0.0006263266 | +0.0006222322 | 15197% slower
+Pux PHP - last route (1000 routes) | 999 | 0.0007687018 | +0.0007646074 | 18675% slower
+Symfony2 - last route (1000 routes) | 998 | 0.0008137582 | +0.0008096638 | 19775% slower
+Conformity - last route (1000 routes) | 996 | 0.0030857291 | +0.0030816347 | 75265% slower
+Aura v2 - unknown route (1000 routes) | 989 | 0.0343667588 | +0.0343626644 | 839264% slower
+Aura v2 - last route (1000 routes) | 994 | 0.0372709240 | +0.0372668296 | 910194% slower
 
 
 ## First route matching
@@ -55,9 +69,13 @@ This benchmark consists of 6 tests. Each test is executed 1,000 times, the resul
 
 Test Name | Results | Time | + Interval | Change
 --------- | ------- | ---- | ---------- | ------
-php-r3 - first route | 989 | 0.0000097053 | +0.0000000000 | baseline
-Pux ext - first route | 985 | 0.0000209825 | +0.0000112773 | 116% slower
-FastRoute - first route | 999 | 0.0000382496 | +0.0000285443 | 294% slower
-Symfony2 Dumped - first route | 991 | 0.0000611150 | +0.0000514098 | 530% slower
-Symfony2 - first route | 978 | 0.0002531449 | +0.0002434397 | 2508% slower
-Aura v2 - first route | 985 | 0.0003834265 | +0.0003737212 | 3851% slower
+Conformity Learnable - first route (1000 routes) | 998 | 0.0000033868 | +0.0000000000 | baseline
+Pux PHP - first route | 997 | 0.0000067228 | +0.0000033360 | 99% slower
+FastRoute - first route | 999 | 0.0000075105 | +0.0000041237 | 122% slower
+TreeRoute - first route | 971 | 0.0000102432 | +0.0000068564 | 202% slower
+Symfony2 Dumped - first route | 999 | 0.0000109241 | +0.0000075373 | 223% slower
+Router - first route | 959 | 0.0000183090 | +0.0000149222 | 441% slower
+Timber - first route | 979 | 0.0000270419 | +0.0000236551 | 698% slower
+Symfony2 - first route | 998 | 0.0000518365 | +0.0000484496 | 1431% slower
+Conformity - first route (1000 routes) | 996 | 0.0000644867 | +0.0000610999 | 1804% slower
+Aura v2 - first route | 996 | 0.0000933562 | +0.0000899694 | 2656% slower
