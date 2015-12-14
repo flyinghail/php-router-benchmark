@@ -4,7 +4,6 @@ PHP Router Benchmark
 The intent here is to benchmark different PHP routing solutions. This is a micro-optimization, done purely out of 
 dumb curiosity.
 
-My benchmark env: Debian 8 + PHP 7.0.0
 
 Installation
 ------------
@@ -21,6 +20,7 @@ Benchmark environment
 ---------
 Debian 8.2
 PHP 7.0.0
+
 
 Currently
 ---------
