@@ -42,6 +42,7 @@ function setupBenchmark($numIterations, $numRoutes, $numArgs)
     setupTimber($benchmark, $numRoutes, $numArgs);
     setupConformity($benchmark, $numRoutes, $numArgs);
     setupLearnableConformity($benchmark, $numRoutes, $numArgs);
+    setupCogRoute($benchmark, $numRoutes, $numArgs);
 
     return $benchmark;
 }
@@ -391,4 +392,29 @@ function setupLearnableConformity(Benchmark $benchmark, $routes, $args)
             $route = $router->dispatch('/not-even-real');
         } catch (\Exception $e) { }
     });
+}
+
+/**
+ * Sets up CogRoute tests
+ */
+function setupCogRoute(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Cog\Router\Core();
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->add(null, $str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('CogRoute - last route (%s routes)', $routes), function () use ($router, $lastStr) {
+            $route = $router->find($lastStr);
+        });
+    $benchmark->register(sprintf('CogRoute - unknown route (%s routes)', $routes), function () use ($router) {
+            $route = $router->find('/not-even-real');
+        });
 }

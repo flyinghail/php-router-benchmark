@@ -1,6 +1,6 @@
 <?php
-
 namespace FirstRouteMatching;
+
 
 use Nice\Benchmark\Benchmark;
 use Nice\Benchmark\ResultPrinter\MarkdownPrinter;
@@ -41,6 +41,7 @@ function setupBenchmark($numIterations, $numRoutes, $numArgs)
     setupTimber($benchmark, $numRoutes, $numArgs);
     setupConformity($benchmark, $numRoutes, $numArgs);
     setupLearnableConformity($benchmark, $numRoutes, $numArgs);
+    setupCogRoute($benchmark, $numRoutes, $numArgs);
 
     return $benchmark;
 }
@@ -346,4 +347,26 @@ function setupLearnableConformity(Benchmark $benchmark, $routes, $args)
     $benchmark->register(sprintf('Conformity Learnable - first route (%s routes)', $routes), function () use ($router, $firstStr) {
         $route = $router->dispatch('GET', $firstStr);
     });
+}
+
+/**
+ * Sets up CogRoute tests
+ */
+function setupCogRoute(Benchmark $benchmark, $routes, $args)
+{
+    $argString = implode('/', array_map(function ($i) { return "{arg$i}"; }, range(1, $args)));
+    $str = $firstStr = $lastStr = '';
+    $router = new \Cog\Router\Core();
+    for ($i = 0; $i < $routes; $i++) {
+        list ($pre, $post) = getRandomParts();
+        $str = '/' . $pre . '/' . $argString . '/' . $post;
+        if (0 === $i) {
+            $firstStr = str_replace(array('{', '}'), '', $str);
+        }
+        $lastStr = str_replace(array('{', '}'), '', $str);
+        $router->add(null, $str, 'handler' . $i);
+    }
+    $benchmark->register(sprintf('CogRoute - first route', $routes), function () use ($router, $firstStr) {
+            $route = $router->find($firstStr);
+        });
 }
